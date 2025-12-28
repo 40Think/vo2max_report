@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VO2max Report — Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #2a2a3a;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .file-upload {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #4f46e5;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--accent);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), #a855f7);
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .stat-unit {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-left: 4px;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        @media (max-width: 1024px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .chart-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+        
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .chart-title span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .client-info {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            margin-bottom: 32px;
+        }
+        
+        .client-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .client-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .client-name {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .client-meta {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .client-meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .client-meta-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        
+        .client-meta-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .data-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .data-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .data-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+        
+        .data-btn:hover:not(.active) {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">VO2max Report</div>
+            <div class="file-upload">
+                <input type="file" id="fileInput" accept=".csv,.json" style="display: none;">
+                <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">📁 Load File</button>
+            </div>
+        </header>
+        
+        <div class="data-selector">
+            <button class="data-btn active" onclick="loadCSV()">📊 OMNIA CSV</button>
+            <button class="data-btn" onclick="loadJSON()">📈 JSON Data</button>
+        </div>
+        
+        <div class="client-info" id="clientInfo" style="display: none;">
+            <div class="client-header">
+                <div class="client-avatar" id="clientAvatar">?</div>
+                <div class="client-name" id="clientName">—</div>
+            </div>
+            <div class="client-meta">
+                <div class="client-meta-item">
+                    <span class="client-meta-label">Возраст</span>
+                    <span class="client-meta-value" id="clientAge">—</span>
+                </div>
+                <div class="client-meta-item">
+                    <span class="client-meta-label">Пол</span>
+                    <span class="client-meta-value" id="clientGender">—</span>
+                </div>
+                <div class="client-meta-item">
+                    <span class="client-meta-label">Вес</span>
+                    <span class="client-meta-value" id="clientWeight">—</span>
+                </div>
+                <div class="client-meta-item">
+                    <span class="client-meta-label">Рост</span>
+                    <span class="client-meta-value" id="clientHeight">—</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">VO2max</div>
+                <div class="stat-value" id="vo2max">—<span class="stat-unit">мл/кг/мин</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">HRmax</div>
+                <div class="stat-value" id="hrmax">—<span class="stat-unit">уд/мин</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Peak Power</div>
+                <div class="stat-value" id="powermax">—<span class="stat-unit">Вт</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Длительность</div>
+                <div class="stat-value" id="duration">—<span class="stat-unit">мин</span></div>
+            </div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-title"><span style="background: #ef4444;"></span> VO2 и HR vs Время</div>
+                <div class="chart-container">
+                    <canvas id="vo2HrChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title"><span style="background: #10b981;"></span> Мощность vs HR</div>
+                <div class="chart-container">
+                    <canvas id="powerHrChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title"><span style="background: #6366f1;"></span> VO2 vs Мощность</div>
+                <div class="chart-container">
+                    <canvas id="vo2PowerChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title"><span style="background: #f59e0b;"></span> Эффективность (VO2/Power)</div>
+                <div class="chart-container">
+                    <canvas id="efficiencyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chart.js global config
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.borderColor = '#2a2a3a';
+        
+        let charts = {};
+        
+        // Sample data - will be replaced when loading files
+        const csvData = {
+            source: 'OMNIA CSV',
+            items: [
+                {time: 30, vo2_kg: 22.53, vo2: 1599, hr: 113, power: 103.83},
+                {time: 60, vo2_kg: 20.44, vo2: 1451, hr: 109, power: 104.37},
+                {time: 90, vo2_kg: 20.18, vo2: 1433, hr: 111, power: 103.27},
+                {time: 120, vo2_kg: 20.56, vo2: 1459, hr: 108, power: 106.73},
+                {time: 150, vo2_kg: 20.62, vo2: 1465, hr: 113, power: 120.1},
+                {time: 180, vo2_kg: 21.63, vo2: 1536, hr: 114, power: 121.43},
+                {time: 210, vo2_kg: 24.08, vo2: 1709, hr: 114, power: 124.83},
+                {time: 240, vo2_kg: 24.11, vo2: 1712, hr: 115, power: 126.67},
+                {time: 270, vo2_kg: 22.38, vo2: 1591, hr: 115, power: 137.5},
+                {time: 300, vo2_kg: 22.50, vo2: 1601, hr: 118, power: 141.87},
+                {time: 330, vo2_kg: 26.93, vo2: 1913, hr: 119, power: 141.83},
+                {time: 360, vo2_kg: 26.40, vo2: 1874, hr: 119, power: 144.6},
+                {time: 390, vo2_kg: 28.12, vo2: 1996, hr: 122, power: 155.97},
+                {time: 420, vo2_kg: 29.21, vo2: 2075, hr: 127, power: 162.33},
+                {time: 450, vo2_kg: 31.11, vo2: 2209, hr: 126, power: 162.27},
+                {time: 480, vo2_kg: 31.68, vo2: 2249, hr: 128, power: 163.45},
+                {time: 510, vo2_kg: 30.56, vo2: 2170, hr: 131, power: 178.17},
+                {time: 540, vo2_kg: 32.99, vo2: 2343, hr: 133, power: 180.83},
+                {time: 570, vo2_kg: 33.62, vo2: 2386, hr: 134, power: 181.9},
+                {time: 600, vo2_kg: 34.13, vo2: 2423, hr: 132, power: 180.5},
+                {time: 630, vo2_kg: 36.53, vo2: 2594, hr: 138, power: 200.63},
+                {time: 660, vo2_kg: 40.06, vo2: 2844, hr: 139, power: 201.13},
+                {time: 690, vo2_kg: 38.00, vo2: 2697, hr: 141, power: 200.63},
+                {time: 720, vo2_kg: 37.82, vo2: 2686, hr: 140, power: 202.07},
+                {time: 750, vo2_kg: 38.06, vo2: 2702, hr: 142, power: 215.8},
+                {time: 780, vo2_kg: 40.58, vo2: 2881, hr: 147, power: 219.27},
+                {time: 810, vo2_kg: 42.21, vo2: 2997, hr: 145, power: 219.93},
+                {time: 840, vo2_kg: 41.95, vo2: 2979, hr: 146, power: 221.23},
+                {time: 870, vo2_kg: 43.20, vo2: 3067, hr: 148, power: 235.63},
+                {time: 900, vo2_kg: 43.01, vo2: 3053, hr: 153, power: 240.13},
+                {time: 930, vo2_kg: 45.28, vo2: 3214, hr: 153, power: 241.63},
+                {time: 960, vo2_kg: 44.95, vo2: 3192, hr: 152, power: 240.27},
+                {time: 990, vo2_kg: 45.69, vo2: 3244, hr: 156, power: 257.57},
+                {time: 1020, vo2_kg: 44.91, vo2: 3188, hr: 157, power: 260.73},
+                {time: 1050, vo2_kg: 48.11, vo2: 3416, hr: 158, power: 260.93},
+                {time: 1080, vo2_kg: 48.71, vo2: 3458, hr: 160, power: 259.37},
+                {time: 1110, vo2_kg: 49.04, vo2: 3482, hr: 162, power: 276.57},
+                {time: 1140, vo2_kg: 52.46, vo2: 3725, hr: 165, power: 280.73},
+                {time: 1170, vo2_kg: 51.84, vo2: 3681, hr: 166, power: 282.1},
+                {time: 1200, vo2_kg: 50.70, vo2: 3600, hr: 167, power: 278.8},
+                {time: 1230, vo2_kg: 52.19, vo2: 3706, hr: 170, power: 291.7},
+                {time: 1260, vo2_kg: 50.92, vo2: 3614, hr: 169, power: 235.03},
+                {time: 1290, vo2_kg: 51.67, vo2: 3669, hr: 161, power: 202.83},
+                {time: 1320, vo2_kg: 43.08, vo2: 3059, hr: 158, power: 201},
+                {time: 1350, vo2_kg: 39.36, vo2: 2795, hr: 154, power: 199.47},
+                {time: 1380, vo2_kg: 41.80, vo2: 2967, hr: 151, power: 200.2}
+            ]
+        };
+        
+        const jsonData = {
+            source: 'Custom JSON',
+            client: {
+                name: 'Фетисова Ирина',
+                age: 31,
+                gender: 'F',
+                weight: 53,
+                height: 170
+            },
+            items: [] // Will generate sample
+        };
+        
+        // Generate sample JSON data
+        for (let t = 5; t <= 1920; t += 5) {
+            const progress = t / 1920;
+            const vo2 = 1400 + progress * 1800 + Math.random() * 200;
+            jsonData.items.push({
+                time: t,
+                vo2_kg: vo2 / 53,
+                vo2: vo2,
+                hr: Math.round(110 + progress * 80 + Math.random() * 5),
+                power: Math.round(60 + progress * 130 + Math.random() * 10),
+                r: 0.85 + progress * 0.2
+            });
+        }
+        
+        function updateStats(data) {
+            const items = data.items;
+            const maxVo2Kg = Math.max(...items.map(i => i.vo2_kg || 0));
+            const maxHr = Math.max(...items.map(i => i.hr || 0));
+            const maxPower = Math.max(...items.map(i => i.power || 0));
+            const duration = Math.max(...items.map(i => i.time || 0)) / 60;
+            
+            document.getElementById('vo2max').innerHTML = maxVo2Kg.toFixed(1) + '<span class="stat-unit">мл/кг/мин</span>';
+            document.getElementById('hrmax').innerHTML = maxHr + '<span class="stat-unit">уд/мин</span>';
+            document.getElementById('powermax').innerHTML = maxPower.toFixed(0) + '<span class="stat-unit">Вт</span>';
+            document.getElementById('duration').innerHTML = duration.toFixed(1) + '<span class="stat-unit">мин</span>';
+        }
+        
+        function updateClientInfo(data) {
+            const info = document.getElementById('clientInfo');
+            if (data.client) {
+                info.style.display = 'block';
+                document.getElementById('clientName').textContent = data.client.name || '—';
+                document.getElementById('clientAvatar').textContent = (data.client.name || '?')[0].toUpperCase();
+                document.getElementById('clientAge').textContent = data.client.age ? data.client.age + ' лет' : '—';
+                document.getElementById('clientGender').textContent = data.client.gender === 'F' ? 'Ж' : 'М';
+                document.getElementById('clientWeight').textContent = data.client.weight ? data.client.weight + ' кг' : '—';
+                document.getElementById('clientHeight').textContent = data.client.height ? data.client.height + ' см' : '—';
+            } else {
+                info.style.display = 'none';
+            }
+        }
+        
+        function createCharts(data) {
+            const items = data.items;
+            const times = items.map(i => (i.time / 60).toFixed(1));
+            
+            // Destroy existing charts
+            Object.values(charts).forEach(c => c.destroy());
+            
+            // VO2 & HR vs Time
+            charts.vo2Hr = new Chart(document.getElementById('vo2HrChart'), {
+                type: 'line',
+                data: {
+                    labels: times,
+                    datasets: [
+                        {
+                            label: 'VO2 (мл/кг/мин)',
+                            data: items.map(i => i.vo2_kg),
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            yAxisID: 'y',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'HR (уд/мин)',
+                            data: items.map(i => i.hr),
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            yAxisID: 'y1',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { 
+                            title: { display: true, text: 'Время (мин)' },
+                            ticks: { maxTicksLimit: 10 }
+                        },
+                        y: { 
+                            title: { display: true, text: 'VO2' },
+                            position: 'left'
+                        },
+                        y1: { 
+                            title: { display: true, text: 'HR' },
+                            position: 'right',
+                            grid: { drawOnChartArea: false }
+                        }
+                    },
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+            
+            // Power vs HR
+            charts.powerHr = new Chart(document.getElementById('powerHrChart'), {
+                type: 'line',
+                data: {
+                    labels: times,
+                    datasets: [
+                        {
+                            label: 'Мощность (Вт)',
+                            data: items.map(i => i.power),
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            yAxisID: 'y',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'HR (уд/мин)',
+                            data: items.map(i => i.hr),
+                            borderColor: '#6366f1',
+                            yAxisID: 'y1',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { 
+                            title: { display: true, text: 'Время (мин)' },
+                            ticks: { maxTicksLimit: 10 }
+                        },
+                        y: { 
+                            title: { display: true, text: 'Мощность (Вт)' },
+                            position: 'left'
+                        },
+                        y1: { 
+                            title: { display: true, text: 'HR' },
+                            position: 'right',
+                            grid: { drawOnChartArea: false }
+                        }
+                    },
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+            
+            // VO2 vs Power (scatter)
+            charts.vo2Power = new Chart(document.getElementById('vo2PowerChart'), {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'VO2 vs Power',
+                        data: items.map(i => ({ x: i.power, y: i.vo2_kg })),
+                        backgroundColor: 'rgba(99, 102, 241, 0.6)',
+                        borderColor: '#6366f1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: 'Мощность (Вт)' } },
+                        y: { title: { display: true, text: 'VO2 (мл/кг/мин)' } }
+                    }
+                }
+            });
+            
+            // Efficiency
+            charts.efficiency = new Chart(document.getElementById('efficiencyChart'), {
+                type: 'line',
+                data: {
+                    labels: times,
+                    datasets: [{
+                        label: 'VO2/Power (мл/Вт)',
+                        data: items.map(i => i.power > 0 ? (i.vo2 / i.power).toFixed(2) : null),
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { 
+                            title: { display: true, text: 'Время (мин)' },
+                            ticks: { maxTicksLimit: 10 }
+                        },
+                        y: { title: { display: true, text: 'VO2/Power (мл/Вт)' } }
+                    }
+                }
+            });
+        }
+        
+        function loadCSV() {
+            document.querySelectorAll('.data-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.data-btn')[0].classList.add('active');
+            updateStats(csvData);
+            updateClientInfo(csvData);
+            createCharts(csvData);
+        }
+        
+        function loadJSON() {
+            document.querySelectorAll('.data-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.data-btn')[1].classList.add('active');
+            updateStats(jsonData);
+            updateClientInfo(jsonData);
+            createCharts(jsonData);
+        }
+        
+        // File input handler
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    if (file.name.endsWith('.json')) {
+                        const data = JSON.parse(e.target.result);
+                        // Handle our JSON format
+                        if (data.dataMap) {
+                            const weight = data.setup?.weight || 70;
+                            const parsed = {
+                                source: 'Custom JSON',
+                                client: data.setup ? {
+                                    name: data.setup.name,
+                                    age: data.setup.age,
+                                    gender: data.setup.sex === 'f' ? 'F' : 'M',
+                                    weight: data.setup.weight,
+                                    height: data.setup.height
+                                } : null,
+                                items: data.dataMap.map(([time, m]) => ({
+                                    time: time,
+                                    vo2_kg: m.O2_Flow / weight,
+                                    vo2: m.O2_Flow,
+                                    hr: m.HR,
+                                    power: m.Power,
+                                    r: m.R
+                                }))
+                            };
+                            updateStats(parsed);
+                            updateClientInfo(parsed);
+                            createCharts(parsed);
+                        }
+                    } else if (file.name.endsWith('.csv')) {
+                        // Parse CSV
+                        const lines = e.target.result.split('\n');
+                        const headers = lines[0].split(',');
+                        const items = [];
+                        
+                        for (let i = 1; i < lines.length; i++) {
+                            if (!lines[i].trim()) continue;
+                            const values = lines[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
+                            const parseVal = s => parseFloat((s || '').replace(/"/g, '').replace(',', '.'));
+                            
+                            items.push({
+                                time: parseVal(values[0]),
+                                vo2_kg: parseVal(values[2]),
+                                vo2: parseVal(values[3]),
+                                hr: parseVal(values[4]),
+                                power: parseVal(values[5])
+                            });
+                        }
+                        
+                        const parsed = { source: 'CSV', items };
+                        updateStats(parsed);
+                        updateClientInfo(parsed);
+                        createCharts(parsed);
+                    }
+                } catch (err) {
+                    alert('Error parsing file: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        });
+        
+        // Initial load
+        loadCSV();
+    </script>
+</body>
+</html>
