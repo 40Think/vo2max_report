@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VO2max / MPK Report</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <header class="brand">
+          <p class="eyebrow">MPK Report</p>
+          <h1>VO2max</h1>
+          <p class="brand-copy">Рабочее место спортивного диагноста</p>
+        </header>
+
+        <section class="panel">
+          <h2>Клиент</h2>
+          <div class="grid two">
+            <label>Имя<input id="firstName" value="Иван"></label>
+            <label>Фамилия<input id="lastName" value="Петров"></label>
+          </div>
+          <button id="createClient">Создать клиента</button>
+          <p id="clientStatus" class="status"></p>
+        </section>
+
+        <section class="panel">
+          <h2>Импорт теста</h2>
+          <label>Путь к CSV<input id="csvPath"></label>
+          <label>CSV-файл<input id="csvFile" type="file" accept=".csv,text/csv"></label>
+          <div class="grid two">
+            <label>Дата<input id="testDate" type="date" value="2026-04-29"></label>
+            <label>Активность
+              <select id="activityType">
+                <option value="cycling">Велосипед</option>
+                <option value="running">Бег</option>
+                <option value="swimming">Плавание</option>
+                <option value="other">Другое</option>
+              </select>
+            </label>
+          </div>
+          <button id="importTest">Импортировать</button>
+          <button id="uploadTest">Загрузить файл</button>
+          <p id="importStatus" class="status"></p>
+        </section>
+
+        <section class="panel">
+          <h2>Тесты</h2>
+          <div id="history" class="history empty">Пока нет тестов</div>
+        </section>
+
+        <section class="panel">
+          <h2>Пороги и зоны</h2>
+          <p id="selectedRowStatus" class="status">Выберите строку таблицы</p>
+          <div class="threshold-buttons">
+            <button data-threshold="mam">МАМ</button>
+            <button data-threshold="aep">АэП</button>
+            <button data-threshold="anp">АнП</button>
+            <button data-threshold="do2">ДО2</button>
+            <button data-threshold="vo2max">МПК</button>
+          </div>
+          <div id="zones" class="zones empty">Зоны появятся после назначения порогов</div>
+        </section>
+
+        <section class="panel">
+          <h2>Отчет</h2>
+          <button id="previewReport">Предпросмотр</button>
+          <button id="generateReports">HTML / PDF / DOCX</button>
+          <div id="reportLinks" class="report-links empty">Файлы отчета еще не созданы</div>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Текущий контекст</p>
+            <h2 id="topClientName">Клиент не выбран</h2>
+            <p id="topTestMeta" class="top-meta">Создайте клиента и загрузите CSV</p>
+          </div>
+          <div class="top-actions">
+            <button id="topPreviewReport">Предпросмотр</button>
+            <button id="topGenerateReports">Экспорт</button>
+          </div>
+        </header>
+
+        <header class="workspace-header">
+          <div>
+            <p class="eyebrow">Диагностическая сводка</p>
+            <h2 id="workspaceTitle">Импортируйте тест</h2>
+          </div>
+          <div class="toolbar">
+            <label>Старт, W<input id="startPower" type="number"></label>
+            <label>Шаг, W<input id="powerStep" type="number"></label>
+            <button id="savePower">Пересчитать</button>
+            <label>Каждая N-я<input id="sampleEvery" type="number" min="1" value="1"></label>
+            <button id="applySampling">Применить</button>
+          </div>
+        </header>
+
+        <section class="summary-strip">
+          <article class="metric-card">
+            <span>HR max</span>
+            <strong id="metricHr">-</strong>
+            <small>bpm</small>
+          </article>
+          <article class="metric-card">
+            <span>VO2 max</span>
+            <strong id="metricVo2">-</strong>
+            <small>ml/kg/min</small>
+          </article>
+          <article class="metric-card">
+            <span>Power max</span>
+            <strong id="metricPower">-</strong>
+            <small>W</small>
+          </article>
+          <article class="metric-card">
+            <span>Порог</span>
+            <strong id="metricThreshold">-</strong>
+            <small>выбранная точка</small>
+          </article>
+        </section>
+
+        <section class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-title"><h3>ЧСС</h3><span>bpm</span></div>
+            <div id="chart-hr" class="chart"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title"><h3>Вентиляция</h3><span>L/min</span></div>
+            <div id="chart-ventilation" class="chart"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title"><h3>VO2</h3><span>ml/kg/min</span></div>
+            <div id="chart-oxygen" class="chart"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title"><h3>Лактат</h3><span>mmol/L</span></div>
+            <div id="chart-lactate" class="chart"></div>
+          </div>
+        </section>
+
+        <section class="table-section">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Human in the loop</p>
+              <h2>Таблица измерений</h2>
+            </div>
+            <p>Клик по строке выбирает точку для порогов, значения можно править прямо в ячейках.</p>
+          </div>
+          <details class="manual-entry">
+            <summary>Добавить строку вручную</summary>
+            <div class="manual-grid">
+              <label>Время, сек<input id="manualTimeSec" type="number" min="0" step="any" placeholder="180"></label>
+              <label>Мощность, W<input id="manualPower" type="number" step="any" placeholder="220"></label>
+              <label>ЧСС, bpm<input id="manualHr" type="number" step="any" placeholder="158"></label>
+              <label>VO2<input id="manualVo2" type="number" step="any" placeholder="48.5"></label>
+              <label>Ve<input id="manualVe" type="number" step="any" placeholder="92"></label>
+              <label>Лактат<input id="manualLactate" type="number" step="any" placeholder="4.2"></label>
+              <button id="addManualRow">Добавить</button>
+            </div>
+            <p id="manualEntryStatus" class="status">Если тест еще не создан, программа создаст ручной тест автоматически.</p>
+          </details>
+          <div class="table-wrap">
+            <table id="measurementTable">
+              <thead></thead>
+              <tbody>
+                <tr><td class="empty-table">Создайте клиента и импортируйте CSV</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

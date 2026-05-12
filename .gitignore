@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Frontend
+node_modules/
+dist/
+build/
+.next/
+
+# Local configuration
+.env
+.env.*
+*.log
+
+# Product data: never commit personal/raw diagnostic data
+storage/raw_files/*
+storage/reports/*
+storage/*.pkl
+storage/*.json
+!storage/raw_files/.gitkeep
+!storage/reports/.gitkeep
+
+# Local databases
+*.sqlite3
+*.db
