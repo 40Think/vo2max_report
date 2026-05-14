@@ -1,110 +1,80 @@
-# VO2max / MPK Report App
+# VO2max / MPK Report
 
-This directory is the clean product workspace for the web version.
+This repository combines:
 
-## Current Phase
+1. Existing customer research/adaptation materials for VO2max reporting.
+2. The current clean web MVP located in this workspace.
 
-Implemented baseline for phases 0-2:
+## Current Web MVP
 
-- project structure;
-- backend domain models;
-- legacy CSV parser;
-- import preview service;
-- anonymized sample CSV;
-- unit tests.
+The implemented MVP shows the path from diagnostic data to report:
 
-Detailed completion note: `docs/PHASE_0_2_SUMMARY.md`.
-
-Implemented baseline for phases 3-4:
-
-- client service;
-- client search and profile;
+- client creation and search;
 - measurement history;
-- import into a specific client profile;
-- dependency-free application API;
-- minimal HTTP server;
-- minimal browser UI for the main measurement workspace;
-- file-backed repository for local persistence;
-- workspace service for the main measurement screen;
-- editable measurement items;
+- legacy CSV import;
+- manual data entry and editing;
 - row sampling;
-- rated power recalculation;
-- audit events for imports and manual edits;
-- frontend-ready workspace view model.
+- threshold assignment;
+- charts;
+- training zones;
+- report preview;
+- HTML/PDF/DOCX-style report exports;
+- local file-backed persistence for MVP.
 
-Detailed completion note: `docs/PHASE_3_4_SUMMARY.md`.
+## Run MVP
 
-Implemented baseline for phases 5-6:
+From this directory:
 
-- chart service;
-- HR, ventilation, VO2 and lactate chart data;
-- comparison of several measurements for one client;
-- manual threshold assignment;
-- lactate editing through the measurement table;
-- basic training zones;
-- frontend SVG charts;
-- threshold markers on charts.
-
-Detailed completion note: `docs/PHASE_5_6_SUMMARY.md`.
-
-Implemented baseline for phases 7-9:
-
-- report snapshot;
-- browser CSV upload;
-- HTML preview;
-- HTML, PDF and DOCX export;
-- comparison block in reports;
-- simple DOCX template layer;
-- report download endpoints;
-- report actions in the browser UI;
-- acceptance demo scenario;
-- full MVP test coverage.
-
-Detailed completion note: `docs/PHASE_7_9_SUMMARY.md`.
-Acceptance path: `docs/ACCEPTANCE_DEMO_SCENARIO.md`.
-
-## Structure
-
-```text
-app/
-  backend/
-    vo2max/
-      domain/
-      parsers/
-      services/
-    tests/
-  frontend/
-  docs/
-  samples/
-  storage/
-    raw_files/
-    reports/
+```powershell
+cd backend
+python run_8081.py
 ```
 
-## Run Backend Tests
+Open:
 
-From `app/backend`:
+```text
+http://127.0.0.1:8081
+```
+
+Port `8081` is used because `8080` may be occupied on some Windows machines.
+
+## Checks
+
+From `backend`:
 
 ```powershell
 python -m unittest discover -s tests
 ```
 
-## Run Local App
-
-From `app/backend`:
-
-```powershell
-python -m vo2max.api.server
-```
-
-Then open:
+Expected current result:
 
 ```text
-http://127.0.0.1:8080
+28 tests OK
 ```
 
-The local app stores raw files and its local state under `app/storage`.
+## Important Folders
 
-## Data Safety
+```text
+backend/     Current dependency-light MVP backend and tests
+frontend/    Current web UI
+samples/     Anonymized sample data
+storage/     Local runtime storage placeholders
+docs/        MVP phase notes and acceptance scenario
+Research/    Customer deep research materials
+```
 
-Do not commit real patient/athlete files, raw diagnostic files, generated reports, or exports with personal data.
+## Customer Research Materials
+
+The existing customer repository also contains:
+
+- architecture notes;
+- adaptation notes;
+- research prompts and answers;
+- earlier Django/reporting materials.
+
+These materials are preserved in the merge for context and future development.
+
+## Privacy Note
+
+Do not commit raw diagnostic files, generated reports, personal data, or original legacy/C# source archives. Runtime storage folders are intentionally ignored except `.gitkeep` placeholders.
+

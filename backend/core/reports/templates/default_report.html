@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Отчёт о тестировании</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        td,
+        th {
+            padding: 6px 8px;
+            border: 1px solid #000;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #e8e8e8;
+            font-weight: bold;
+        }
+
+        .header-table td {
+            border: 1px solid #000;
+        }
+
+        .header-table .label {
+            background: #f5f5f5;
+            width: 120px;
+        }
+
+        .section-header {
+            background: #b8cce4;
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            padding: 8px;
+            border: 1px solid #000;
+            margin-top: 10px;
+        }
+
+        .thresholds-table {
+            margin-top: 10px;
+        }
+
+        .thresholds-table td {
+            text-align: center;
+        }
+
+        .thresholds-table .zone-name {
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .bar-container {
+            position: relative;
+            height: 25px;
+            background: #fff;
+        }
+
+        .bar {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 5px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+
+        .bar-aep {
+            background: #6b9bd1;
+        }
+
+        .bar-anp {
+            background: #5a8bc4;
+        }
+
+        .bar-mpk {
+            background: #4a7ab7;
+        }
+
+        .bar-do2 {
+            background: #3a6aaa;
+        }
+
+        .bar-mam {
+            background: #2a5a9d;
+        }
+
+        .vertical-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #cc0000;
+        }
+
+        .conclusion-table td {
+            padding: 8px;
+        }
+
+        .conclusion-table .label {
+            width: 50%;
+        }
+
+        .training-table th {
+            background: #e8e8e8;
+            text-align: center;
+            font-size: 10pt;
+        }
+
+        .training-table td {
+            text-align: center;
+            font-size: 10pt;
+        }
+
+        .training-table .zone-col {
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 9pt;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header Info -->
+    <table class="header-table">
+        <tr>
+            <td class="label">Имя:</td>
+            <td>{{ client.name }}</td>
+            <td class="label">Квалификация:</td>
+            <td>{{ client.qualification }}</td>
+        </tr>
+        <tr>
+            <td class="label">Возраст:</td>
+            <td>{{ client.age }}</td>
+            <td class="label">Рост:</td>
+            <td>{{ client.height }}</td>
+            <td class="label">Вес:</td>
+            <td>{{ client.weight }}</td>
+        </tr>
+    </table>
+
+    <table class="header-table">
+        <tr>
+            <td class="label">Дата</td>
+            <td>{{ test.date }}</td>
+        </tr>
+        <tr>
+            <td class="label">Вид спорта</td>
+            <td>{{ test.sport }}</td>
+        </tr>
+        <tr>
+            <td class="label">Тест</td>
+            <td>{{ test.test_type }}</td>
+        </tr>
+        <tr>
+            <td class="label">Протокол</td>
+            <td>{{ test.protocol }}</td>
+        </tr>
+        <tr>
+            <td class="label">Оборудование</td>
+            <td>{{ test.equipment }}</td>
+        </tr>
+    </table>
+
+    <!-- Thresholds Table with Bar Chart -->
+    <table class="thresholds-table">
+        <tr>
+            <th></th>
+            <th>Ватт</th>
+            <th>O2</th>
+            <th>ЧСС</th>
+            <th style="width: 300px;"></th>
+        </tr>
+        {% for t in thresholds %}
+        <tr>
+            <td class="zone-name">{{ t.name }}</td>
+            <td>{{ t.power }}</td>
+            <td>{{ t.vo2 }}</td>
+            <td>{{ t.hr if t.hr else '' }}</td>
+            <td rowspan="2" style="padding: 2px;">
+                <div class="bar-container">
+                    <div class="bar bar-{{ t.name|lower }}" style="width: {{ t.power_percent }}%;">
+                        {{ t.power }}
+                    </div>
+                    {% if t.name == 'ДО2' %}
+                    <div class="vertical-line" style="left: {{ t.power_percent }}%;"></div>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>на кг</td>
+            <td>{{ t.power_per_kg }}</td>
+            <td>{{ t.vo2_per_kg }}</td>
+            <td></td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <!-- Conclusions -->
+    <div class="section-header">Заключение</div>
+    <table class="conclusion-table">
+        <tr>
+            <td class="label">Лимитирующим звеном является</td>
+            <td>{{ conclusions.limiting_factor }}</td>
+        </tr>
+        <tr>
+            <td class="label">Качество проработки мышц после АнП</td>
+            <td>{{ conclusions.muscle_quality }}</td>
+        </tr>
+        <tr>
+            <td class="label">Доставка O2 позволяет дойти до</td>
+            <td>{{ conclusions.o2_delivery_limit }} ватт</td>
+        </tr>
+        <tr>
+            <td class="label">Мышечная сила позволяет дойти до</td>
+            <td>{{ conclusions.muscle_strength_limit }} ватт</td>
+        </tr>
+    </table>
+
+    <!-- Training Zones -->
+    <div class="section-header">Тренировки</div>
+    <table class="training-table">
+        <tr>
+            <th></th>
+            <th colspan="2">ЧСС</th>
+            <th colspan="2">Интервал ватт</th>
+            <th colspan="2">Повторы</th>
+            <th colspan="2">Мощность отдыха ватт</th>
+            <th>Раз в неделю</th>
+        </tr>
+        <tr>
+            <th>Z - зоны</th>
+            <th>от</th>
+            <th>до</th>
+            <th>от</th>
+            <th>до</th>
+            <th>от</th>
+            <th>до</th>
+            <th>от</th>
+            <th>до</th>
+            <th></th>
+        </tr>
+        {% for z in training_zones %}
+        <tr>
+            <td class="zone-col">{{ z.label }} ({{ z.name }})</td>
+            <td>{{ z.hr_min }}</td>
+            <td>{{ z.hr_max }}</td>
+            <td>{{ z.power_min }}</td>
+            <td>{{ z.power_max }}</td>
+            <td>{{ z.intervals_min }}</td>
+            <td>{{ z.intervals_max }}</td>
+            <td>{{ z.rest_power_min }}</td>
+            <td>{{ z.rest_power_max }}</td>
+            <td>{{ z.sessions }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="footer">
+        Сгенерировано: VO2max Report System
+    </div>
+</body>
+
+</html>

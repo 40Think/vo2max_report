@@ -1,24 +1,21 @@
-# Python
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.venv/
-venv/
+# Original legacy/C# project files and personal materials
+/src/
+/doc/
+*.sln
+*.csproj
+*.cs
+*.xaml
+*.xaml.cs
+*.config
+*.suo
+*.user
+*.rar
 
-# Frontend
-node_modules/
-dist/
-build/
-.next/
-
-# Local configuration
-.env
-.env.*
-*.log
-
-# Product data: never commit personal/raw diagnostic data
+# Generated reports and diagnostic data
+backend/sample_report.html
+backend/detailed_report.html
+backend/*.pdf
+backend/data/
 storage/raw_files/*
 storage/reports/*
 storage/*.pkl
@@ -26,6 +23,68 @@ storage/*.json
 !storage/raw_files/.gitkeep
 !storage/reports/.gitkeep
 
-# Local databases
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+ENV/
+env/
+
+# Frontend / local builds
+node_modules/
+.next/
+
+# Local databases and locks
 *.sqlite3
 *.db
+*.lock
+*.ide
+*.ide-shm
+*.ide-wal
+db.lock
+storage.ide
+storage.ide-shm
+storage.ide-wal
+
+# IDE / OS
+.vs/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.*
+.env.local
+*.pem
+*.key
+
+# Logs / coverage
+*.log
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+coverage.xml
+
+# Large binary outputs
+*.docx
+*.pdf
+
+# Keep Research enabled for customer context
+# /Research/
+
